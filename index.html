@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulation pédagogique d'une fusée-sonde</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <main id="scene-container" aria-label="Visualisation 3D de la Terre"></main>
+      <aside id="interface" aria-label="Panneau de configuration et télémétrie">
+        <header>
+          <h1>Vol balistique éducatif</h1>
+          <p class="intro">
+            Explore la dynamique d'une fusée-sonde depuis un point de lancement jusqu'au point d'impact en utilisant un modèle physique vertical avec trajectoire cartographiée sur la planète Terre.
+          </p>
+        </header>
+
+        <form id="simulation-form">
+          <fieldset>
+            <legend>Points de mission</legend>
+            <div class="field-group">
+              <label for="launch-lat">Latitude de lancement (°)</label>
+              <input id="launch-lat" name="launchLat" type="number" step="0.1" value="48.0" min="-90" max="90" />
+            </div>
+            <div class="field-group">
+              <label for="launch-lon">Longitude de lancement (°)</label>
+              <input id="launch-lon" name="launchLon" type="number" step="0.1" value="2.0" min="-180" max="180" />
+            </div>
+            <div class="field-group">
+              <label for="impact-lat">Latitude d'impact (°)</label>
+              <input id="impact-lat" name="impactLat" type="number" step="0.1" value="45.0" min="-90" max="90" />
+            </div>
+            <div class="field-group">
+              <label for="impact-lon">Longitude d'impact (°)</label>
+              <input id="impact-lon" name="impactLon" type="number" step="0.1" value="-73.0" min="-180" max="180" />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Paramètres propulsion</legend>
+            <div class="field-group">
+              <label for="initial-mass">Masse initiale (kg)</label>
+              <input id="initial-mass" name="initialMass" type="number" step="1" value="50" min="1" />
+            </div>
+            <div class="field-group">
+              <label for="thrust">Poussée (N)</label>
+              <input id="thrust" name="thrust" type="number" step="10" value="1500" min="0" />
+            </div>
+            <div class="field-group">
+              <label for="mass-flow">Débit massique (kg/s)</label>
+              <input id="mass-flow" name="massFlow" type="number" step="0.1" value="2" min="0" />
+            </div>
+            <div class="field-group">
+              <label for="burn-time">Durée de combustion (s)</label>
+              <input id="burn-time" name="burnTime" type="number" step="0.1" value="10" min="0" />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Interaction atmosphérique</legend>
+            <div class="field-group">
+              <label for="area">Surface frontale (m²)</label>
+              <input id="area" name="area" type="number" step="0.01" value="0.05" min="0" />
+            </div>
+            <div class="field-group">
+              <label for="drag">Coefficient de traînée</label>
+              <input id="drag" name="drag" type="number" step="0.01" value="0.75" min="0" />
+            </div>
+          </fieldset>
+
+          <div class="actions">
+            <button type="submit">Lancer la simulation</button>
+            <button type="button" id="reset-btn">Réinitialiser</button>
+          </div>
+        </form>
+
+        <section class="telemetry" aria-live="polite">
+          <h2>Télémétrie</h2>
+          <div class="telemetry-grid">
+            <div>
+              <span class="label">Temps</span>
+              <span id="telemetry-time" class="value">0.0 s</span>
+            </div>
+            <div>
+              <span class="label">Altitude</span>
+              <span id="telemetry-altitude" class="value">0 m</span>
+            </div>
+            <div>
+              <span class="label">Vitesse verticale</span>
+              <span id="telemetry-velocity" class="value">0 m/s</span>
+            </div>
+            <div>
+              <span class="label">Masse</span>
+              <span id="telemetry-mass" class="value">0 kg</span>
+            </div>
+            <div>
+              <span class="label">Poussée</span>
+              <span id="telemetry-thrust" class="value">0 N</span>
+            </div>
+            <div>
+              <span class="label">Traînée</span>
+              <span id="telemetry-drag" class="value">0 N</span>
+            </div>
+            <div>
+              <span class="label">Gravité</span>
+              <span id="telemetry-gravity" class="value">9.81 m/s²</span>
+            </div>
+            <div>
+              <span class="label">Densité de l'air</span>
+              <span id="telemetry-density" class="value">1.225 kg/m³</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="notes">
+          <h2>Hypothèses du modèle</h2>
+          <ul>
+            <li>Trajectoire verticale intégrée par Runge–Kutta (RK4) sous gravité et traînée variables.</li>
+            <li>La trajectoire horizontale est projetée sur le grand cercle reliant les points choisis.</li>
+            <li>La simulation reste dans un cadre éducatif pour illustrer les principes physiques.</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
