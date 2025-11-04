@@ -47,7 +47,7 @@ La simulation utilise la **méthode de Runge-Kutta d'ordre 4 (RK4)** pour une pr
   - Débit massique (0.5-5 kg/s)
 
 ### Visualisation 3D
-- 🌍 Terre 3D avec texture procédurale
+- 🌍 Terre 3D avec texture réaliste haute résolution (NASA Blue Marble)
 - 🚀 Fusée avec flammes animées
 - 📈 Trajectoire en temps réel
 - ⭐ Atmosphère et étoiles
