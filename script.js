@@ -238,13 +238,18 @@ function initThreeJS() {
     sunLight.position.set(5, 3, 5);
     scene.add(sunLight);
     
-    // Terre
+    // Terre avec texture réelle de la NASA
     const earthGeometry = new THREE.SphereGeometry(CONSTANTS.EARTH_RADIUS_VISUAL, 64, 64);
-    const earthTexture = createEarthTexture();
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Charger la texture de la Terre depuis une source en ligne
+    const earthTexture = textureLoader.load('https://unpkg.com/three-globe@2.24.3/example/img/earth-blue-marble.jpg');
+    
     const earthMaterial = new THREE.MeshPhongMaterial({ 
         map: earthTexture,
         specular: 0x333333,
-        shininess: 5
+        shininess: 5,
+        bumpScale: 0.05
     });
     earth = new THREE.Mesh(earthGeometry, earthMaterial);
     scene.add(earth);
@@ -276,47 +281,7 @@ function initThreeJS() {
     window.addEventListener('resize', onWindowResize);
 }
 
-function createEarthTexture() {
-    // Créer une texture procédurale simple pour la Terre
-    const canvas = document.createElement('canvas');
-    canvas.width = 2048;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
-    
-    // Océans
-    ctx.fillStyle = '#1a5f8f';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Continents (simplifié)
-    ctx.fillStyle = '#2d7a3f';
-    
-    // Afrique
-    ctx.beginPath();
-    ctx.ellipse(1100, 550, 150, 200, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Europe
-    ctx.beginPath();
-    ctx.ellipse(1050, 400, 80, 60, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Asie
-    ctx.beginPath();
-    ctx.ellipse(1400, 450, 250, 180, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Amériques
-    ctx.beginPath();
-    ctx.ellipse(500, 450, 120, 250, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.ellipse(450, 650, 90, 150, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    return texture;
-}
+// Fonction supprimée - utilisation d'une vraie texture de la Terre depuis internet
 
 function createStars() {
     const starsGeometry = new THREE.BufferGeometry();
