@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Fusée-Sonde Éducative 🚀</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="container">
+        <!-- Canvas Three.js -->
+        <canvas id="canvas"></canvas>
+        
+        <!-- Panneau de contrôle -->
+        <div id="control-panel">
+            <h2>🎯 Configuration de la Mission</h2>
+            
+            <div class="control-group">
+                <h3>📍 Point de Départ</h3>
+                <label>
+                    Latitude: <span id="lat-start-value">40.0</span>°
+                    <input type="range" id="lat-start" min="-85" max="85" value="40" step="0.1">
+                </label>
+                <label>
+                    Longitude: <span id="lon-start-value">-3.0</span>°
+                    <input type="range" id="lon-start" min="-180" max="180" value="-3" step="0.1">
+                </label>
+            </div>
+            
+            <div class="control-group">
+                <h3>🎯 Point d'Impact Visé</h3>
+                <label>
+                    Latitude: <span id="lat-end-value">45.0</span>°
+                    <input type="range" id="lat-end" min="-85" max="85" value="45" step="0.1">
+                </label>
+                <label>
+                    Longitude: <span id="lon-end-value">5.0</span>°
+                    <input type="range" id="lon-end" min="-180" max="180" value="5" step="0.1">
+                </label>
+            </div>
+            
+            <div class="control-group">
+                <h3>⚙️ Paramètres Fusée</h3>
+                <label>
+                    Masse initiale: <span id="mass-value">50</span> kg
+                    <input type="range" id="mass-init" min="20" max="200" value="50" step="1">
+                </label>
+                <label>
+                    Poussée: <span id="thrust-value">1500</span> N
+                    <input type="range" id="thrust" min="500" max="5000" value="1500" step="50">
+                </label>
+                <label>
+                    Temps de combustion: <span id="burn-value">10</span> s
+                    <input type="range" id="burn-time" min="5" max="30" value="10" step="0.5">
+                </label>
+                <label>
+                    Débit massique: <span id="mdot-value">2.0</span> kg/s
+                    <input type="range" id="mdot" min="0.5" max="5" value="2" step="0.1">
+                </label>
+            </div>
+            
+            <div class="button-group">
+                <button id="launch-btn" class="btn-primary">🚀 LANCER LA SIMULATION</button>
+                <button id="reset-btn" class="btn-secondary">🔄 RÉINITIALISER</button>
+            </div>
+        </div>
+        
+        <!-- Tableau de bord temps réel -->
+        <div id="dashboard">
+            <h2>📊 Données de Vol en Temps Réel</h2>
+            
+            <div class="metric-grid">
+                <div class="metric">
+                    <span class="label">⏱️ Temps</span>
+                    <span class="value" id="time">0.0 s</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">📏 Altitude</span>
+                    <span class="value" id="altitude">0 m</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">⚡ Vitesse</span>
+                    <span class="value" id="velocity">0 m/s</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">⚖️ Masse</span>
+                    <span class="value" id="mass">0 kg</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">🔥 Poussée</span>
+                    <span class="value" id="thrust-display">0 N</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">🌍 Gravité</span>
+                    <span class="value" id="gravity">9.81 m/s²</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">💨 Traînée</span>
+                    <span class="value" id="drag">0 N</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">🌬️ Densité air</span>
+                    <span class="value" id="density">1.225 kg/m³</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">🚀 Accélération</span>
+                    <span class="value" id="acceleration">0 m/s²</span>
+                </div>
+                
+                <div class="metric highlight">
+                    <span class="label">🏔️ Apogée Max</span>
+                    <span class="value" id="apogee">0 m</span>
+                </div>
+                
+                <div class="metric highlight">
+                    <span class="label">⚡ Vitesse Max</span>
+                    <span class="value" id="max-velocity">0 m/s</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="label">📍 Phase</span>
+                    <span class="value" id="phase">Prêt</span>
+                </div>
+            </div>
+            
+            <div class="formula-display">
+                <h3>📐 Équation de Mouvement</h3>
+                <div class="formula">
+                    m·dv/dt = T(t) - ½ρ(h)·C_D·A·v² - m·g(h)
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div id="instructions">
+            <h3>📖 Instructions</h3>
+            <ul>
+                <li>🖱️ Clic gauche + drag pour faire tourner la Terre</li>
+                <li>🖱️ Molette pour zoomer/dézoomer</li>
+                <li>🎯 Ajustez les points de départ et d'impact</li>
+                <li>⚙️ Configurez les paramètres de la fusée</li>
+                <li>🚀 Lancez la simulation et observez !</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
