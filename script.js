@@ -660,6 +660,21 @@ function setupEventListeners() {
     // Boutons
     document.getElementById('launch-btn').addEventListener('click', launchSimulation);
     document.getElementById('reset-btn').addEventListener('click', resetSimulation);
+    
+    // Fermeture/Ouverture des instructions
+    const instructionsPanel = document.getElementById('instructions');
+    const closeBtn = document.getElementById('close-instructions');
+    const toggleBtn = document.getElementById('toggle-instructions');
+    
+    closeBtn.addEventListener('click', () => {
+        instructionsPanel.classList.add('hidden');
+        toggleBtn.style.display = 'flex';
+    });
+    
+    toggleBtn.addEventListener('click', () => {
+        instructionsPanel.classList.remove('hidden');
+        toggleBtn.style.display = 'none';
+    });
 }
 
 // ===== INITIALISATION =====

@@ -141,7 +141,10 @@
         
         <!-- Instructions -->
         <div id="instructions">
-            <h3>📖 Instructions</h3>
+            <div class="instructions-header">
+                <h3>📖 Instructions</h3>
+                <button id="close-instructions" class="close-btn">✕</button>
+            </div>
             <ul>
                 <li>🖱️ Clic gauche + drag pour faire tourner la Terre</li>
                 <li>🖱️ Molette pour zoomer/dézoomer</li>
@@ -150,6 +153,11 @@
                 <li>🚀 Lancez la simulation et observez !</li>
             </ul>
         </div>
+        
+        <!-- Bouton pour réouvrir les instructions -->
+        <button id="toggle-instructions" class="toggle-instructions-btn" style="display: none;">
+            📖
+        </button>
     </div>
     
     <!-- Three.js -->
