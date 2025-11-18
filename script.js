@@ -309,13 +309,13 @@ function createMarkers() {
     const startGeometry = new THREE.SphereGeometry(0.15, 16, 16);
     const startMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     startMarker = new THREE.Mesh(startGeometry, startMaterial);
-    scene.add(startMarker);
+    earth.add(startMarker);  // Attaché à la Terre pour suivre sa rotation
     
     // Marqueur d'arrivée (rouge)
     const endGeometry = new THREE.SphereGeometry(0.15, 16, 16);
     const endMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     endMarker = new THREE.Mesh(endGeometry, endMaterial);
-    scene.add(endMarker);
+    earth.add(endMarker);  // Attaché à la Terre pour suivre sa rotation
     
     updateMarkerPositions();
 }
@@ -369,7 +369,7 @@ function createRocket() {
     rocket.add(flame);
     
     rocket.visible = false;
-    scene.add(rocket);
+    earth.add(rocket);  // Attaché à la Terre pour suivre sa rotation
 }
 
 function setupControls() {
@@ -432,7 +432,7 @@ function launchSimulation() {
     
     // Effacer l'ancienne trajectoire
     if (trajectory) {
-        scene.remove(trajectory);
+        earth.remove(trajectory);
     }
     trajectoryPoints = [];
     
@@ -443,7 +443,7 @@ function launchSimulation() {
         linewidth: 2
     });
     trajectory = new THREE.Line(trajectoryGeometry, trajectoryMaterial);
-    scene.add(trajectory);
+    earth.add(trajectory);  // Attaché à la Terre pour suivre sa rotation
     
     // Positionner la fusée au départ
     rocket.position.copy(simulationState.startPos);
@@ -469,7 +469,7 @@ function resetSimulation() {
     rocket.visible = false;
     
     if (trajectory) {
-        scene.remove(trajectory);
+        earth.remove(trajectory);
         trajectory = null;
     }
     trajectoryPoints = [];
