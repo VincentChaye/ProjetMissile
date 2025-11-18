@@ -10,14 +10,13 @@
     <div id="container">
         <!-- Canvas Three.js -->
         <canvas id="canvas"></canvas>
-        
+        x
         <!-- Panneau de contrôle -->
         <div id="control-panel">
             <h2>🎯 Configuration de la Mission</h2>
             
             <div class="control-group">
                 <h3>📍 Point de Départ</h3>
-                <label>
                     Latitude: <span id="lat-start-value">40.0</span>°
                     <input type="range" id="lat-start" min="-85" max="85" value="40" step="0.1">
                 </label>
@@ -139,18 +138,6 @@
             </div>
         </div>
         
-        <!-- Instructions -->
-        <div id="instructions">
-            <h3>📖 Instructions</h3>
-            <ul>
-                <li>🖱️ Clic gauche + drag pour faire tourner la Terre</li>
-                <li>🖱️ Molette pour zoomer/dézoomer</li>
-                <li>🎯 Ajustez les points de départ et d'impact</li>
-                <li>⚙️ Configurez les paramètres de la fusée</li>
-                <li>🚀 Lancez la simulation et observez !</li>
-            </ul>
-        </div>
-    </div>
     
     <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
