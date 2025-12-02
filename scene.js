@@ -159,7 +159,7 @@ function setupControls() {
     
     renderer.domElement.addEventListener('wheel', (e) => {
         e.preventDefault();
-        const zoomSpeed = 0.1;
+        const zoomSpeed = 0.8;
         camera.position.z += e.deltaY * zoomSpeed * 0.01;
         camera.position.z = Math.max(10, Math.min(50, camera.position.z));
     });

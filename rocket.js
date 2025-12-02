@@ -1,18 +1,14 @@
 // ========================================
-// 🚀 GESTION DE LA FUSÉE
+// 🚀 GESTION DE LA FUSÉE (rocket.js)
 // ========================================
 
+// Variables visuelles
 let rocket;
 let trajectory;
 let trajectoryPoints = [];
 
-let rocketParams = {
-    m0: 50,          // masse initiale (kg)
-    thrust: 1500,    // poussée (N)
-    mdot: 2.0,       // débit massique (kg/s)
-    tBurn: 10,       // temps de combustion (s)
-    mDry: 20         // masse sèche (kg)
-};
+// NOTE : rocketParams est maintenant géré dans constants.js
+// Ne pas le re-déclarer ici !
 
 function createRocket() {
     // Groupe pour la fusée
@@ -47,57 +43,11 @@ function createRocket() {
     rocket.add(flame);
     
     rocket.visible = false;
-    earth.add(rocket);  // Attaché à la Terre pour suivre sa rotation
-}
-
-function updateRocketPosition() {
-    // Interpoler entre start et end en fonction de la progression
-    const totalDistance = simulationState.startPos.distanceTo(simulationState.endPos);
-    const progress = Math.min(simulationState.time / 60, 1); // Progression sur 60 secondes
     
-    // SLERP pour l'interpolation sphérique
-    const startNorm = simulationState.startPos.clone().normalize();
-    const endNorm = simulationState.endPos.clone().normalize();
-    const angle = startNorm.angleTo(endNorm);
-    
-    if (angle > 0) {
-        const sinAngle = Math.sin(angle);
-        const a = Math.sin((1 - progress) * angle) / sinAngle;
-        const b = Math.sin(progress * angle) / sinAngle;
-        
-        const basePos = new THREE.Vector3(
-            a * startNorm.x + b * endNorm.x,
-            a * startNorm.y + b * endNorm.y,
-            a * startNorm.z + b * endNorm.z
-        );
-        
-        // Ajouter l'altitude
-        const radius = CONSTANTS.EARTH_RADIUS_VISUAL + (simulationState.h * CONSTANTS.SCALE_FACTOR);
-        basePos.normalize().multiplyScalar(radius);
-        
-        rocket.position.copy(basePos);
-        
-        // Orienter la fusée
-        const upVector = basePos.clone().normalize();
-        const tangent = simulationState.v > 0 ? upVector : upVector.clone().negate();
-        rocket.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tangent);
-    }
-    
-    // Ajouter le point à la trajectoire
-    trajectoryPoints.push(rocket.position.clone());
-    if (trajectoryPoints.length > 1000) {
-        trajectoryPoints.shift();
-    }
-    
-    // Mettre à jour la géométrie de trajectoire
-    if (trajectory && trajectoryPoints.length > 0) {
-        const positions = new Float32Array(trajectoryPoints.length * 3);
-        trajectoryPoints.forEach((point, i) => {
-            positions[i * 3] = point.x;
-            positions[i * 3 + 1] = point.y;
-            positions[i * 3 + 2] = point.z;
-        });
-        trajectory.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        trajectory.geometry.attributes.position.needsUpdate = true;
+    // Sécurité : On attend que la Terre soit créée avant d'attacher la fusée
+    if (typeof earth !== 'undefined') {
+        earth.add(rocket);
+    } else {
+        console.error("Erreur: La Terre n'est pas encore créée lors de l'initialisation de la fusée.");
     }
 }

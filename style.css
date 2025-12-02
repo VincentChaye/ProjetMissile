@@ -1,5 +1,5 @@
 /* ========================================
-   🚀 SIMULATION FUSÉE-SONDE - STYLES
+   🚀 SIMULATION FUSÉE-SONDE - STYLES COMPLET
    ======================================== */
 
 * {
@@ -8,11 +8,28 @@
     box-sizing: border-box;
 }
 
+:root {
+    /* Palette de couleurs "Space UI" */
+    --bg-color: #000510;
+    --panel-bg: rgba(15, 20, 40, 0.95);
+    --text-primary: #ffffff;
+    --text-secondary: #88ddff;
+    --accent-blue: #64c8ff;
+    --accent-orange: #ffaa44;
+    
+    /* Couleurs pour les Forces Physiques */
+    --col-thrust: #00ff88;  /* Vert Néon (Poussée) */
+    --col-drag: #ff4444;    /* Rouge Néon (Traînée) */
+    --col-weight: #ffaa00;  /* Orange (Poids) */
+    --col-mass: #00ccff;    /* Bleu Cyan (Masse) */
+    --col-accel: #ffffff;   /* Blanc (Résultat) */
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;
-    background: #000510;
-    color: #ffffff;
+    background: var(--bg-color);
+    color: var(--text-primary);
 }
 
 #container {
@@ -27,466 +44,463 @@ body {
     height: 100%;
 }
 
-/* ===== PANNEAU DE CONTRÔLE ===== */
+/* ========================================
+   1. VISUALISATION MATHÉMATIQUE (NOUVEAU)
+   ======================================== */
+
+.math-container {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(100, 200, 255, 0.15);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.math-title {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 8px;
+}
+
+/* Structure de l'équation */
+.equation-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: 'Courier New', monospace; /* Police code pour les maths */
+    font-size: 1.1em; 
+    padding: 10px 0;
+}
+
+.operator {
+    color: #666;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+/* La Fraction (Numérateur / Dénominateur) */
+.fraction {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 5px;
+}
+
+.numerator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid var(--text-primary); /* Barre de fraction */
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+.denominator {
+    font-weight: bold;
+}
+
+/* Groupes de termes (Symbole + Valeur) */
+.term-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: opacity 0.2s;
+}
+
+.symbol {
+    font-size: 0.7em;
+    opacity: 0.8;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+}
+
+.value {
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+.unit {
+    font-size: 0.6em;
+    color: #888;
+    margin-left: 2px;
+}
+
+/* Application des couleurs spécifiques */
+.thrust .symbol, .thrust .value { color: var(--col-thrust); text-shadow: 0 0 8px rgba(0, 255, 136, 0.3); }
+.drag .symbol, .drag .value { color: var(--col-drag); text-shadow: 0 0 8px rgba(255, 68, 68, 0.3); }
+.weight .symbol, .weight .value { color: var(--col-weight); }
+.mass .symbol, .mass .value { color: var(--col-mass); }
+.result .value { color: var(--col-accel); font-size: 1.3em; }
+
+/* Légende sous l'équation */
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.75em;
+    color: #aaa;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+.dot.thrust { background: var(--col-thrust); box-shadow: 0 0 5px var(--col-thrust); }
+.dot.drag { background: var(--col-drag); box-shadow: 0 0 5px var(--col-drag); }
+.dot.weight { background: var(--col-weight); }
+
+
+/* ========================================
+   2. PANNEAU DE CONTRÔLE (GAUCHE)
+   ======================================== */
 
 #control-panel {
     position: absolute;
     top: 20px;
     left: 20px;
-    background: rgba(15, 20, 40, 0.95);
-    border: 2px solid rgba(100, 200, 255, 0.3);
+    background: var(--panel-bg);
+    border: 1px solid rgba(100, 200, 255, 0.2);
     border-radius: 15px;
     padding: 20px;
-    max-width: 350px;
+    width: 340px;
     max-height: 90vh;
     overflow-y: auto;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    z-index: 10;
 }
 
-#control-panel h2 {
-    color: #64c8ff;
-    font-size: 1.4em;
+#control-panel h2, #dashboard h2 {
+    color: var(--accent-blue);
+    font-size: 1.2em;
     margin-bottom: 20px;
     text-align: center;
-    text-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(100, 200, 255, 0.3);
 }
 
 #control-panel h3 {
-    color: #88ddff;
-    font-size: 1.1em;
-    margin-bottom: 10px;
-    margin-top: 10px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin: 15px 0 10px 0;
+    text-transform: uppercase;
 }
 
 .control-group {
-    background: rgba(20, 30, 50, 0.6);
+    background: rgba(255, 255, 255, 0.03);
     border-radius: 10px;
     padding: 15px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(100, 200, 255, 0.2);
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .control-group label {
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     margin-bottom: 12px;
-    font-size: 0.95em;
+    font-size: 0.9em;
     color: #c0e0ff;
 }
 
 .control-group label span {
-    display: inline-block;
-    min-width: 80px;
     font-weight: bold;
-    color: #ffaa44;
+    color: var(--accent-orange);
 }
 
+/* Sliders */
 input[type="range"] {
     width: 100%;
-    height: 6px;
+    height: 4px;
     background: rgba(100, 200, 255, 0.2);
-    border-radius: 5px;
+    border-radius: 2px;
     outline: none;
     margin-top: 8px;
     cursor: pointer;
+    -webkit-appearance: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    background: linear-gradient(135deg, #64c8ff, #3399ff);
+    width: 16px;
+    height: 16px;
+    background: var(--accent-blue);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 5px rgba(100, 200, 255, 0.5);
-    transition: all 0.2s;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.8);
+    transition: transform 0.1s;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
     transform: scale(1.2);
-    box-shadow: 0 0 10px rgba(100, 200, 255, 0.8);
 }
 
-input[type="range"]::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background: linear-gradient(135deg, #64c8ff, #3399ff);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 0 5px rgba(100, 200, 255, 0.5);
-    transition: all 0.2s;
-}
-
-input[type="range"]::-moz-range-thumb:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 10px rgba(100, 200, 255, 0.8);
-}
-
-/* ===== BOUTONS ===== */
-
+/* Boutons */
 .button-group {
     display: flex;
-    flex-direction: column;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 25px;
 }
 
 button {
-    padding: 12px 20px;
-    font-size: 1em;
+    flex: 1;
+    padding: 12px;
+    font-size: 0.9em;
     font-weight: bold;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #ff6600, #ff3300);
+    background: linear-gradient(135deg, #0066ff, #00ccff);
     color: white;
-    box-shadow: 0 4px 15px rgba(255, 102, 0, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 100, 255, 0.3);
 }
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #ff7722, #ff4411);
-    box-shadow: 0 6px 20px rgba(255, 102, 0, 0.6);
-    transform: translateY(-2px);
-}
-
-.btn-primary:active {
-    transform: translateY(0);
-}
-
-.btn-primary:disabled {
-    background: #555;
-    cursor: not-allowed;
-    box-shadow: none;
-}
+.btn-primary:hover { filter: brightness(1.2); }
+.btn-primary:disabled { background: #445; cursor: not-allowed; box-shadow: none; }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #555, #333);
+    background: rgba(255, 255, 255, 0.1);
     color: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255,255,255,0.1);
 }
+.btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
 
-.btn-secondary:hover {
-    background: linear-gradient(135deg, #666, #444);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    transform: translateY(-2px);
-}
 
-/* ===== TABLEAU DE BORD ===== */
+/* ========================================
+   3. TABLEAU DE BORD (DROITE)
+   ======================================== */
 
 #dashboard {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: rgba(15, 20, 40, 0.95);
-    border: 2px solid rgba(100, 200, 255, 0.3);
+    background: var(--panel-bg);
+    border: 1px solid rgba(100, 200, 255, 0.2);
     border-radius: 15px;
     padding: 20px;
-    min-width: 400px;
-    max-width: 450px;
+    width: 360px; /* Un peu plus large pour les formules */
     max-height: 90vh;
     overflow-y: auto;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-#dashboard h2 {
-    color: #64c8ff;
-    font-size: 1.4em;
-    margin-bottom: 20px;
-    text-align: center;
-    text-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    z-index: 10;
 }
 
 .metric-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .metric {
-    background: rgba(20, 30, 50, 0.7);
-    border: 1px solid rgba(100, 200, 255, 0.2);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 12px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    transition: all 0.3s;
 }
 
 .metric:hover {
-    background: rgba(30, 40, 60, 0.8);
-    border-color: rgba(100, 200, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(100, 200, 255, 0.2);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(100, 200, 255, 0.3);
 }
 
 .metric.highlight {
-    background: rgba(255, 140, 0, 0.15);
-    border-color: rgba(255, 170, 0, 0.4);
-}
-
-.metric.highlight:hover {
-    background: rgba(255, 140, 0, 0.25);
-    border-color: rgba(255, 170, 0, 0.6);
+    grid-column: span 2;
+    background: rgba(100, 200, 255, 0.1);
+    border-color: rgba(100, 200, 255, 0.3);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .metric .label {
-    font-size: 0.85em;
-    color: #88ddff;
+    font-size: 0.75em;
+    color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 .metric .value {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
-    color: #ffaa44;
+    color: var(--text-primary);
     font-family: 'Courier New', monospace;
 }
 
-/* ===== FORMULES ===== */
+/* ========================================
+   4. AUTRES ÉLÉMENTS
+   ======================================== */
 
-.formula-display {
-    background: rgba(30, 40, 60, 0.7);
-    border: 1px solid rgba(100, 200, 255, 0.3);
-    border-radius: 10px;
-    padding: 15px;
-    margin-top: 15px;
-}
-
-.formula-display h3 {
-    color: #88ddff;
-    font-size: 1em;
-    margin-bottom: 10px;
-}
-
-.formula {
-    font-family: 'Courier New', monospace;
-    color: #ffaa44;
-    font-size: 1em;
-    text-align: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-    letter-spacing: 1px;
-}
-
-/* ===== INSTRUCTIONS ===== */
-
+/* Instructions */
 #instructions {
     position: absolute;
     bottom: 20px;
     left: 20px;
-    background: rgba(15, 20, 40, 0.95);
-    border: 2px solid rgba(100, 200, 255, 0.3);
-    border-radius: 15px;
-    padding: 15px 20px;
-    max-width: 350px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    transition: opacity 0.3s, transform 0.3s;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--accent-blue);
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 400px;
+    z-index: 100;
 }
-
-#instructions.hidden {
-    opacity: 0;
-    transform: translateY(20px);
-    pointer-events: none;
-}
-
-.instructions-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-#instructions h3 {
-    color: #64c8ff;
-    font-size: 1.1em;
-    margin-bottom: 0;
-}
+#instructions.hidden { display: none; }
+#instructions h2 { color: var(--accent-blue); margin-top: 0; }
+#instructions ul { padding-left: 20px; color: #ddd; }
+#instructions li { margin-bottom: 5px; }
 
 .close-btn {
-    background: rgba(255, 100, 100, 0.2);
-    border: 1px solid rgba(255, 100, 100, 0.4);
-    color: #ff6666;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    font-size: 1.2em;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #ff4444;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    transition: all 0.3s;
-    line-height: 1;
-}
-
-.close-btn:hover {
-    background: rgba(255, 100, 100, 0.4);
-    border-color: rgba(255, 100, 100, 0.6);
-    transform: scale(1.1);
+    font-size: 1.2em;
 }
 
 .toggle-instructions-btn {
     position: absolute;
     bottom: 20px;
     left: 20px;
-    background: linear-gradient(135deg, rgba(100, 200, 255, 0.9), rgba(50, 150, 255, 0.9));
-    border: 2px solid rgba(100, 200, 255, 0.5);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 1.5em;
+    padding: 10px 20px;
+    background: var(--panel-bg);
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-blue);
+    border-radius: 20px;
     cursor: pointer;
+    z-index: 99;
+}
+
+/* Scrollbar Custom */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+::-webkit-scrollbar-thumb { background: rgba(100,200,255,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,200,255,0.5); }
+
+
+
+/* ========================================
+   🎓 POP-UP ÉDUCATIF
+   ======================================== */
+
+.edu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 5, 16, 0.85); /* Fond sombre transparent */
+    backdrop-filter: blur(8px);
+    z-index: 2000;
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 0;
-    box-shadow: 0 4px 15px rgba(100, 200, 255, 0.4);
-    transition: all 0.3s;
-    z-index: 1000;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.3s;
 }
 
-.toggle-instructions-btn:hover {
-    transform: scale(1.15);
-    box-shadow: 0 6px 20px rgba(100, 200, 255, 0.6);
+.edu-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none; /* Important pour ne pas bloquer les clics */
 }
 
-#instructions ul {
-    list-style: none;
-    padding-left: 0;
+.edu-modal {
+    background: linear-gradient(145deg, #1a253a, #0f1525);
+    border: 2px solid var(--accent-blue);
+    box-shadow: 0 0 40px rgba(100, 200, 255, 0.2);
+    padding: 30px;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    transform: scale(1);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-#instructions li {
-    color: #c0e0ff;
+@keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.edu-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 15px;
+}
+
+.edu-icon {
+    font-size: 3em;
+    display: block;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px rgba(255,255,255,0.3);
+}
+
+#edu-title {
+    color: var(--accent-blue);
+    font-size: 1.5em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.edu-content {
+    margin-bottom: 25px;
+    line-height: 1.6;
+    color: #d0dbe6;
+}
+
+.edu-math-focus {
+    background: rgba(0, 0, 0, 0.3);
+    border-left: 4px solid var(--accent-orange);
+    padding: 15px;
+    margin-top: 20px;
+    text-align: left;
+    border-radius: 0 8px 8px 0;
+}
+
+.edu-math-focus strong {
+    color: var(--accent-orange);
+    display: block;
+    margin-bottom: 5px;
     font-size: 0.9em;
-    margin-bottom: 8px;
-    padding-left: 5px;
+    text-transform: uppercase;
 }
 
-/* ===== SCROLLBAR PERSONNALISÉE ===== */
 
-#control-panel::-webkit-scrollbar,
-#dashboard::-webkit-scrollbar {
-    width: 8px;
-}
-
-#control-panel::-webkit-scrollbar-track,
-#dashboard::-webkit-scrollbar-track {
-    background: rgba(20, 30, 50, 0.5);
-    border-radius: 10px;
-}
-
-#control-panel::-webkit-scrollbar-thumb,
-#dashboard::-webkit-scrollbar-thumb {
-    background: rgba(100, 200, 255, 0.4);
-    border-radius: 10px;
-}
-
-#control-panel::-webkit-scrollbar-thumb:hover,
-#dashboard::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 200, 255, 0.6);
-}
-
-/* ===== ANIMATIONS ===== */
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-#control-panel,
-#dashboard,
-#instructions {
-    animation: fadeIn 0.5s ease-out;
-}
-
-/* ===== RESPONSIVE ===== */
-
-@media (max-width: 1400px) {
-    #dashboard {
-        min-width: 350px;
-    }
-    
-    .metric-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 1100px) {
-    #control-panel {
-        max-width: 300px;
-    }
-    
-    #dashboard {
-        min-width: 300px;
-        max-width: 350px;
-    }
-    
-    #instructions {
-        display: none;
-    }
-}
-
+/* Responsive */
 @media (max-width: 800px) {
-    #control-panel,
-    #dashboard {
+    #control-panel, #dashboard {
         position: relative;
-        top: auto;
-        left: auto;
-        right: auto;
-        max-width: 100%;
-        border-radius: 0;
-        margin: 0;
+        width: 100%;
+        top: 0; left: 0; right: 0;
+        margin-bottom: 10px;
+        max-height: none;
     }
-    
-    #container {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    #canvas {
-        height: 50vh;
-    }
+    #container { overflow-y: auto; }
+    #canvas { height: 60vh; position: sticky; top: 0; }
 }
 
-/* ===== EFFETS VISUELS ===== */
 
-.glow {
-    text-shadow: 0 0 10px rgba(100, 200, 255, 0.8),
-                 0 0 20px rgba(100, 200, 255, 0.6),
-                 0 0 30px rgba(100, 200, 255, 0.4);
-}
-
-/* ===== LOADING ===== */
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.loading {
-    animation: pulse 1.5s ease-in-out infinite;
-}
