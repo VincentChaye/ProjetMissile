@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulation Missile - Modèle Mathématique</title>
+    <style>
+        body { margin: 0; background: #111; color: white; font-family: monospace; overflow: hidden; }
+        canvas { display: block; }
+        #overlay { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #444; }
+    </style>
+</head>
+<body>
+
+<div id="overlay">
+    <h3>État du Système</h3>
+    <div id="telemetry">Initialisation...</div>
+    <br>
+    <small>Bleu: Terre | Rouge: Missile | Jaune: Vecteur Poussée</small>
+</div>
+
+<canvas id="simCanvas"></canvas>
+
+<script>
+// ==========================================
+// 1. OUTILS MATHÉMATIQUES (Algèbre Linéaire)
+// ==========================================
+
+// Création Matrice Antisymétrique (Skew-Symmetric)
+// w = vecteur rotation {x, y, z}
+function getSkewSymmetric(w) {
+    return [
+        [0, -w.z, w.y],
+        [w.z, 0, -w.x],
+        [-w.y, w.x, 0]
+    ];
+}
+
+// Multiplication Matrice 3x3 * Vecteur 3
+function matMulVec(M, v) {
+    return {
+        x: M[0][0]*v.x + M[0][1]*v.y + M[0][2]*v.z,
+        y: M[1][0]*v.x + M[1][1]*v.y + M[1][2]*v.z,
+        z: M[2][0]*v.x + M[2][1]*v.y + M[2][2]*v.z
+    };
+}
+
+// Multiplication Matrice 3x3 * Matrice 3x3
+function matMulMat(A, B) {
+    let C = [[0,0,0],[0,0,0],[0,0,0]];
+    for(let i=0; i<3; i++) {
+        for(let j=0; j<3; j++) {
+            for(let k=0; k<3; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+    return C;
+}
+
+// Norme d'un vecteur
+function norm(v) {
+    return Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+// ==========================================
+// 2. CONSTANTES PHYSIQUES
+// ==========================================
+const G = 6.67430e-11;
+const M_TERRE = 5.972e24;
+const R_TERRE = 6371000; // Mètres
+
+// Paramètres Missile
+const MASSE_VIDE = 1000; 
+const MASSE_FUEL = 5000;
+const POUSSEE_MAX = 140000; // Newtons
+const CONSO = 25; // kg/s
+
+// ==========================================
+// 3. ÉTAT DU SYSTÈME (Class)
+// ==========================================
+class MissileState {
+    constructor() {
+        this.t = 0;
+        this.m = MASSE_VIDE + MASSE_FUEL;
+        
+        // Position (Au sol, pôle Nord pour simplifier la vue 2D)
+        this.pos = { x: 0, y: R_TERRE, z: 0 };
+        
+        // Vitesse
+        this.vel = { x: 0, y: 0, z: 0 };
+        
+        // Matrice de Rotation R (Initialement alignée: le missile pointe vers Y+)
+        // Le missile est 'debout' sur le pôle Nord
+        this.R = [
+            [0, -1, 0], // Axe X missile (côté)
+            [1, 0, 0],  // Axe Y missile (Pointe vers le haut dans le repère local)
+            [0, 0, 1]   // Axe Z missile
+        ]; 
+        // Note: Ici on définit que l'axe Y local du missile est la direction de la poussée.
+    }
+}
+
+let state = new MissileState();
+let trajectory = []; // Pour dessiner la traînée
+
+// ==========================================
+// 4. MOTEUR PHYSIQUE (BOUCLE)
+// ==========================================
+const dt = 0.1; // Pas de temps (secondes)
+const speedFactor = 50; // Accélérer le temps pour la vue
+
+function updatePhysics() {
+    // Répéter plusieurs fois par frame pour la stabilité
+    for (let step = 0; step < speedFactor; step++) {
+        
+        let altitude = norm(state.pos) - R_TERRE;
+        let r_dist = norm(state.pos);
+
+        // --- A. GESTION DES PHASES (Logique de Contrôle) ---
+        let thrustOn = false;
+        let omega = { x: 0, y: 0, z: 0 }; // Vitesse de rotation commandée
+
+        if (state.t < 80) {
+            // PHASE 1: Décollage Vertical + Gravity Turn (Rotation légère)
+            thrustOn = true;
+            // On tourne autour de Z pour pencher le missile vers X (Est)
+            if(altitude > 500) omega.z = -0.015; 
+        } 
+        else if (state.t < 350) {
+            // PHASE 2: Mise en orbite (Accélération tangentielle)
+            thrustOn = true;
+            // Stabilisation (on arrête de tourner, on pousse tout droit)
+            omega.z = 0.0;
+        } 
+        else if (state.t < 500) {
+            // PHASE 3: Orbite / Balistique (Moteur coupé)
+            thrustOn = false;
+        }
+        else {
+            // PHASE 4: Descente (Simulation simplifiée)
+            thrustOn = false;
+        }
+
+        // Si plus de fuel, on coupe
+        if (state.m <= MASSE_VIDE) thrustOn = false;
+
+
+        // --- B. CALCUL DES FORCES ---
+        
+        // 1. Gravité F = -G*M*m / r^3 * vec(r)
+        let g_force_mag = (G * M_TERRE * state.m) / (r_dist * r_dist * r_dist);
+        let F_grav = {
+            x: -g_force_mag * state.pos.x,
+            y: -g_force_mag * state.pos.y,
+            z: -g_force_mag * state.pos.z
+        };
+
+        // 2. Poussée (Thrust)
+        // La poussée est orientée selon l'axe Y local du missile
+        // On doit transformer ce vecteur local [0, T, 0] vers le repère global via R
+        let F_thrust = { x:0, y:0, z:0 };
+        if (thrustOn) {
+            let localThrust = { x: 0, y: POUSSEE_MAX, z: 0 }; 
+            F_thrust = matMulVec(state.R, localThrust);
+            state.m -= CONSO * dt;
+        }
+
+        // 3. Frottement (Simplifié)
+        let rho = altitude < 100000 ? 1.225 * Math.exp(-altitude/8500) : 0;
+        let v_mag = norm(state.vel);
+        let F_drag = { x:0, y:0, z:0 };
+        if (v_mag > 0) {
+            let dragCoeff = 0.5 * rho * 0.5 * 1.0 * v_mag; // Cd=0.5, A=1.0
+            F_drag = {
+                x: -dragCoeff * state.vel.x,
+                y: -dragCoeff * state.vel.y,
+                z: -dragCoeff * state.vel.z
+            };
+        }
+
+        // Total Forces
+        let F_total = {
+            x: F_grav.x + F_thrust.x + F_drag.x,
+            y: F_grav.y + F_thrust.y + F_drag.y,
+            z: F_grav.z + F_thrust.z + F_drag.z
+        };
+
+        // --- C. INTÉGRATION (Newton-Euler) ---
+        
+        // a = F/m
+        let acc = {
+            x: F_total.x / state.m,
+            y: F_total.y / state.m,
+            z: F_total.z / state.m
+        };
+
+        // v = v + a*dt
+        state.vel.x += acc.x * dt;
+        state.vel.y += acc.y * dt;
+        state.vel.z += acc.z * dt;
+
+        // x = x + v*dt
+        state.pos.x += state.vel.x * dt;
+        state.pos.y += state.vel.y * dt;
+        state.pos.z += state.vel.z * dt;
+
+        // --- D. INTÉGRATION ROTATION (Votre demande spécifique) ---
+        // dR/dt = R * [omega]x
+        
+        // 1. Matrice Omega antisymétrique
+        let OmegaSkew = getSkewSymmetric(omega);
+        
+        // 2. Calculer dR (R * OmegaSkew)
+        let dR = matMulMat(state.R, OmegaSkew);
+        
+        // 3. Mise à jour R = R + dR * dt
+        for(let i=0; i<3; i++) {
+            for(let j=0; j<3; j++) {
+                state.R[i][j] += dR[i][j] * dt;
+            }
+        }
+        // Note: Dans une simulation longue, il faudrait ré-orthogonaliser la matrice R
+        // ici on ignore la dérive numérique pour rester simple.
+
+        state.t += dt;
+    }
+    
+    // Sauvegarder trajectoire pour dessin (tous les 100 updates)
+    if (state.t % 1 < 0.2) {
+        trajectory.push({...state.pos});
+        if(trajectory.length > 500) trajectory.shift();
+    }
+}
+
+// ==========================================
+// 5. RENDU GRAPHIQUE (Canvas)
+// ==========================================
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+function draw() {
+    updatePhysics();
+
+    // Effacer
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Paramètres caméra (Centré sur la Terre)
+    // On décale pour voir le lancement en bas
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height; 
+    const scale = 0.0005; // Zoom (Pixels par Mètre)
+
+    ctx.save();
+    ctx.translate(centerX, centerY - R_TERRE * scale - 50); // Mettre la surface en bas de l'écran
+
+    // 1. Dessiner la Terre
+    ctx.beginPath();
+    ctx.arc(0, 0, R_TERRE * scale, 0, Math.PI * 2);
+    ctx.fillStyle = '#2244aa';
+    ctx.fill();
+    ctx.strokeStyle = '#4488ff';
+    ctx.stroke();
+
+    // 2. Dessiner la Trajectoire
+    ctx.beginPath();
+    if(trajectory.length > 0) ctx.moveTo(trajectory[0].x * scale, -trajectory[0].y * scale);
+    for (let p of trajectory) {
+        ctx.lineTo(p.x * scale, -p.y * scale); // Y inversé car canvas Y descend
+    }
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 3. Dessiner le Missile
+    let mx = state.pos.x * scale;
+    let my = -state.pos.y * scale;
+
+    ctx.translate(mx, my);
+    
+    // Rotation visuelle : On doit calculer l'angle depuis la matrice R
+    // L'axe Y du missile est R[0][1] (x) et R[1][1] (y)
+    let angle = Math.atan2(state.R[0][1], state.R[1][1]);
+    // Correction pour le canvas (Y inversé)
+    ctx.rotate(-angle); 
+
+    // Corps du missile
+    ctx.fillStyle = 'red';
+    ctx.fillRect(-3, -10, 6, 20);
+    
+    // Flamme si poussée
+    if (state.t < 350 && state.m > MASSE_VIDE) {
+        ctx.fillStyle = 'orange';
+        ctx.beginPath();
+        ctx.moveTo(-2, 10);
+        ctx.lineTo(0, 20 + Math.random()*5);
+        ctx.lineTo(2, 10);
+        ctx.fill();
+    }
+
+    ctx.restore();
+
+    // UI Mise à jour
+    let alt = (norm(state.pos) - R_TERRE) / 1000;
+    let vel = norm(state.vel);
+    let phase = "INCONNUE";
+    if(state.t < 80) phase = "1. DECOLLAGE";
+    else if(state.t < 350) phase = "2. MISE EN ORBITE";
+    else if(state.t < 500) phase = "3. ORBITE / BALISTIQUE";
+    else phase = "4. RENTRÉE";
+
+    document.getElementById('telemetry').innerHTML = `
+        Temps: ${state.t.toFixed(1)} s<br>
+        Altitude: ${alt.toFixed(1)} km<br>
+        Vitesse: ${vel.toFixed(1)} m/s<br>
+        Masse: ${state.m.toFixed(0)} kg<br>
+        Phase: <strong>${phase}</strong>
+    `;
+
+    requestAnimationFrame(draw);
+}
+
+// Lancer
+draw();
+
+</script>
+</body>
+</html>

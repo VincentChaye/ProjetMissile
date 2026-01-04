@@ -1,21 +1,16 @@
 // ========================================
-// 🚀 POINT D'ENTRÉE PRINCIPAL (main.js)
+// 🌍 POINT D'ENTRÉE PRINCIPAL
 // ========================================
 
 function animate() {
     requestAnimationFrame(animate);
     
-    // Rotation lente de la Terre
-    if (typeof earth !== 'undefined') {
-        earth.rotation.y += 0.0005;
+    // Rotation automatique douce de la Terre
+    if (typeof earth !== 'undefined' && CONFIG.AUTO_ROTATE) {
+        earth.rotation.y += CONFIG.ROTATION_SPEED;
     }
     
-    // Mise à jour de la physique (1/60eme de seconde)
-    if (typeof updateSimulation === 'function') {
-        updateSimulation(1/60);
-    }
-    
-    // Rendu
+    // Rendu de l'image
     if (renderer && scene && camera) {
         renderer.render(scene, camera);
     }
@@ -23,20 +18,11 @@ function animate() {
 
 // Démarrage au chargement de la page
 window.addEventListener('DOMContentLoaded', () => {
-    console.log("Démarrage de l'application...");
+    console.log("Démarrage de la visualisation Terre...");
     
-    // 1. Initialiser la scène 3D
+    // 1. Initialiser la scène 3D (défini dans scene.js)
     initThreeJS();
     
-    // 2. Créer la fusée
-    createRocket();
-    
-    // 3. Attacher les événements (boutons, sliders)
-    setupEventListeners();
-    
-    // 4. Initialiser l'affichage
-    updateDashboard();
-    
-    // 5. Lancer la boucle d'animation
+    // 2. Lancer la boucle d'animation
     animate();
 });
