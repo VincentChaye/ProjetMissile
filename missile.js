@@ -1,5 +1,5 @@
 // ========================================
-// 🚀 MISSILE.JS - VERSION FINALE (LOGS COMPLETS)
+// 🚀 MISSILE.JS - VERSION FINALE (IMPACT & KABOOM)
 // ========================================
 
 const PHYSICS = {
@@ -8,11 +8,14 @@ const PHYSICS = {
     R_EARTH_REAL: 6378000,
     R_SCENE: 5,
     OMEGA_EARTH: 7.292e-5,
-    // M51 Params
     M0: 54000, THRUST: 700000, MASS_FLOW: 223, BURN_TIME: 224, AREA: 4.15, CD: 0.2,
-    // Kourou
+    
+    // Coordonnées Kourou
     LAT: 5.236 * (Math.PI / 180), 
-    LON: -52.768 * (Math.PI / 180) 
+    LON: -52.768 * (Math.PI / 180),
+
+    // Correction Texture (+90°)
+    TEXTURE_OFFSET: Math.PI / 2 
 };
 
 const SCALE_FACTOR = PHYSICS.R_SCENE / PHYSICS.R_EARTH_REAL;
@@ -26,16 +29,17 @@ class Missile {
         this.time = 0;
         this.isActive = false;
         
-        // --- 1. Position Initiale (Local sur Terre) ---
+        // --- 1. Position Initiale ---
         const r = PHYSICS.R_SCENE; 
+        const correctedLon = PHYSICS.LON + PHYSICS.TEXTURE_OFFSET;
         const y = r * Math.sin(PHYSICS.LAT);
         const h = r * Math.cos(PHYSICS.LAT);
-        const x = h * Math.cos(PHYSICS.LON);
-        const z = h * Math.sin(PHYSICS.LON);
+        const x = h * Math.cos(correctedLon);
+        const z = h * Math.sin(correctedLon);
         
         this.startLocalPosition = new THREE.Vector3(x, y, z);
         
-        // Vecteurs physiques
+        // Physique
         this.realPosition = new THREE.Vector3(); 
         this.realVelocity = new THREE.Vector3();
         this.orientation = new THREE.Vector3();
@@ -44,7 +48,7 @@ class Missile {
         this.mesh = this.createMesh();
         this.flame = this.createFlame();
         this.mesh.add(this.flame);
-        this.earth.add(this.mesh); // Attaché à la Terre
+        this.earth.add(this.mesh); 
 
         // --- 3. Traces ---
         this.groundPathPoints = [];
@@ -64,8 +68,6 @@ class Missile {
         this.earth.add(this.airLine);
 
         this.lastTraceTime = 0;
-        
-        // Collage initial
         this.stickToGround();
     }
 
@@ -104,17 +106,16 @@ class Missile {
             this.isActive = true;
             this.flame.visible = true;
             
-            // Init Physique Inertielle
             this.realPosition.copy(this.startLocalPosition).divideScalar(SCALE_FACTOR);
             this.realVelocity = this.getEarthVelocityAt(this.realPosition);
             this.orientation = this.realPosition.clone().normalize();
             
-            console.log("🚀 Lancement ! Suivi télémétrique activé.");
-            console.log("Format: Temps | Altitude | Vitesse | Angle (Pitch)");
+            console.log("🚀 Lancement depuis Kourou !");
         }
     }
 
     update(dt) {
+        // Rotation Terre
         this.earth.rotation.y += PHYSICS.OMEGA_EARTH * dt;
 
         if (!this.isActive) return;
@@ -127,6 +128,25 @@ class Missile {
         const alt = r - PHYSICS.R_EARTH_REAL;
         const upLocal = rVec.clone().normalize();
         
+        // ===========================================
+        // 💥 GESTION DU CRASH (KABOOM)
+        // ===========================================
+        // On vérifie > 10s pour être sûr qu'on a décollé
+        if (this.time > 10 && alt <= 0) {
+            this.isActive = false; // Arrêt simulation
+            this.flame.visible = false;
+
+            // Message Style "Alerte Rouge"
+            console.log("%c💥 KABOOM", "color: red; font-weight: bold; font-size: 30px;");
+            console.log(`Impact confirmé après ${this.time.toFixed(1)} secondes de vol.`);
+            
+            // On force la position visuelle pile au sol (pour éviter qu'il soit sous terre)
+            this.realPosition.setLength(PHYSICS.R_EARTH_REAL);
+            this.updateVisualsInFlight();
+            
+            return; // On sort de la fonction, la physique s'arrête ici.
+        }
+
         const vAtmosphere = this.getEarthVelocityAt(this.realPosition);
         const vRel = new THREE.Vector3().subVectors(this.realVelocity, vAtmosphere);
         const vRelMag = vRel.length();
@@ -169,16 +189,10 @@ class Missile {
         this.updateVisualsInFlight();
         this.updateTrails(dt);
         
-        // ============================================================
-        // 📊 LOGS CONSOLE (Temps, Alt, Vitesse, Angle)
-        // ============================================================
-        // On affiche toutes les 5 secondes de simulation pour ne pas spammer
+        // LOGS
         if (this.time % 5 < dt) {
-             // Calcul de l'angle par rapport à l'horizon (Pitch)
-             // 90° = Vertical, 0° = Horizontal
              const angleFromVertical = upLocal.angleTo(this.orientation);
              const pitchDeg = 90 - THREE.MathUtils.radToDeg(angleFromVertical);
-
              console.log(
                 `T+${this.time.toFixed(0).padStart(3, '0')}s | ` +
                 `Alt: ${(alt/1000).toFixed(0).padStart(4)} km | ` +
